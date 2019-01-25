@@ -4,8 +4,9 @@ import ckan.logic as logic
 import ckan.authz as authz
 from ckan.lib.base import _
 from ckan.logic.auth import (get_package_object, get_group_object,
-                            get_resource_object)
+                             get_resource_object, restrict_anon)
 from ckan.lib.plugins import get_permission_labels
+from ckan.common import asbool, config
 
 
 def sysadmin(context, data_dict):
@@ -88,7 +89,14 @@ def tag_list(context, data_dict):
 
 def user_list(context, data_dict):
     # Users list is visible by default
-    return {'success': True}
+    if data_dict.get('email'):
+        # only sysadmins can specify the 'email' parameter
+        return {'success': False}
+    if not asbool(config.get('ckan.auth.public_user_details', True)):
+        return restrict_anon(context)
+    else:
+        return {'success': True}
+
 
 def package_relationships_list(context, data_dict):
     user = context.get('user')
