@@ -108,6 +108,132 @@ def get_api(ver=1):
     return _finish_ok(response_data)
 
 
+def dataset_autocomplete(ver=API_REST_DEFAULT_VERSION):
+    q = request.args.get(u'incomplete', u'')
+    limit = request.args.get(u'limit', 10)
+    package_dicts = []
+    if q:
+        context = {u'model': model, u'session': model.Session,
+                   u'user': g.user, u'auth_user_obj': g.userobj}
+
+        data_dict = {u'q': q, u'limit': limit}
+
+        package_dicts = get_action(
+            u'package_autocomplete')(context, data_dict)
+
+    resultSet = {u'ResultSet': {u'Result': package_dicts}}
+    return _finish_ok(resultSet)
+
+
+def tag_autocomplete(ver=API_REST_DEFAULT_VERSION):
+    q = request.args.get(u'incomplete', u'')
+    limit = request.args.get(u'limit', 10)
+    vocab = request.args.get(u'vocabulary_id', u'')
+    tag_names = []
+    if q:
+        context = {u'model': model, u'session': model.Session,
+                   u'user': g.user, u'auth_user_obj': g.userobj}
+
+        data_dict = {u'q': q, u'limit': limit}
+        if vocab != '':
+            data_dict['vocabulary_id'] = vocab
+
+        tag_names = get_action(u'tag_autocomplete')(context, data_dict)
+
+    resultSet = {
+        u'ResultSet': {
+            u'Result': [{u'Name': tag} for tag in tag_names]
+        }
+    }
+    return _finish_ok(resultSet)
+
+
+def format_autocomplete(ver=API_REST_DEFAULT_VERSION):
+    q = request.args.get(u'incomplete', u'')
+    limit = request.args.get(u'limit', 5)
+    formats = []
+    if q:
+        context = {u'model': model, u'session': model.Session,
+                   u'user': g.user, u'auth_user_obj': g.userobj}
+        data_dict = {u'q': q, u'limit': limit}
+        formats = get_action(u'format_autocomplete')(context, data_dict)
+
+    resultSet = {
+        u'ResultSet': {
+            u'Result': [{u'Format': format} for format in formats]
+        }
+    }
+    return _finish_ok(resultSet)
+
+
+def user_autocomplete(ver=API_REST_DEFAULT_VERSION):
+    q = request.args.get(u'q', u'')
+    limit = request.args.get(u'limit', 20)
+    ignore_self = request.args.get(u'ignore_self', False)
+    user_list = []
+    if q:
+        context = {u'model': model, u'session': model.Session,
+                   u'user': g.user, u'auth_user_obj': g.userobj}
+
+        data_dict = {u'q': q, u'limit': limit, u'ignore_self': ignore_self}
+
+        user_list = get_action(u'user_autocomplete')(context, data_dict)
+    return _finish_ok(user_list)
+
+
+def group_autocomplete(ver=API_REST_DEFAULT_VERSION):
+    q = request.args.get(u'q', u'')
+    limit = request.args.get(u'limit', 20)
+    group_list = []
+
+    if q:
+        context = {u'user': g.user, u'model': model}
+        data_dict = {u'q': q, u'limit': limit}
+        group_list = get_action(u'group_autocomplete')(context, data_dict)
+    return _finish_ok(group_list)
+
+
+def organization_autocomplete(ver=API_REST_DEFAULT_VERSION):
+    q = request.args.get(u'q', u'')
+    limit = request.args.get(u'limit', 20)
+    organization_list = []
+
+    if q:
+        context = {u'user': g.user, u'model': model}
+        data_dict = {u'q': q, u'limit': limit}
+        organization_list = get_action(
+            u'organization_autocomplete')(context, data_dict)
+    return _finish_ok(organization_list)
+
+
+def snippet(snippet_path, ver=API_REST_DEFAULT_VERSION):
+    u'''Renders and returns a snippet used by ajax calls
+
+        We only allow snippets in templates/ajax_snippets and its subdirs
+    '''
+    snippet_path = u'ajax_snippets/' + snippet_path
+    # werkzeug.datastructures.ImmutableMultiDict.to_dict
+    # by default returns flattened dict with first occurences of each key.
+    # For retrieving multiple values per key, use named argument `flat`
+    # set to `False`
+    extra_vars = request.args.to_dict()
+    return render(snippet_path, extra_vars=extra_vars)
+
+
+def i18n_js_translations(lang, ver=API_REST_DEFAULT_VERSION):
+    ckan_path = os.path.join(os.path.dirname(__file__), u'..')
+    source = os.path.abspath(os.path.join(ckan_path, u'public',
+                             u'base', u'i18n', u'{0}.js'.format(lang)))
+    if not os.path.exists(source):
+        return u'{}'
+    translations = json.load(open(source, u'r'))
+    return _finish_ok(translations)
+
+
+# Routing
+
+# Root
+
 api.add_url_rule(u'/', view_func=get_api, strict_slashes=False)
 api.add_url_rule(u'/<int(min=1, max={0}):ver>'.format(API_MAX_VERSION),
                  view_func=get_api, strict_slashes=False)
