@@ -34,7 +34,7 @@ v.2.9.0 TBA
    standard `paster db upgrade` migrations need CKAN to be stopped). Ideally it
    is run before CKAN is upgraded, but it can be run afterwards. If running
    previous versions or this version of CKAN, download and run
-   migrate_package_activity.py like this:
+   migrate_package_activity.py like this::
 
      cd /usr/lib/ckan/default/src/ckan/
      wget https://raw.githubusercontent.com/ckan/ckan/3484_revision_ui_removal2/ckan/migration/migrate_package_activity.py
@@ -51,6 +51,10 @@ v.2.9.0 TBA
    sensitive). When upgrading, open data CKANs are encouraged to make this
    history open to the public, by setting this in production.ini:
    ``ckan.auth.public_activity_stream_detail = true`` (#3972)
+
+ * Server deployments need changes to their config, because the WSGI Entrypoint
+   has changed. See the upgrade doc for details of updating your
+   mod_wsgi configuration: :ref:`deployment-changes-for-ckan-2.9` (#4802)
 
 Minor changes:
 
