@@ -517,7 +517,7 @@ class RequestResetView(MethodView):
             # Try searching the user
             if id and len(id) > 2:
                 user_list = logic.get_action(u'user_list')(context, {
-                    u'id': id
+                    u'q': id
                 })
                 if len(user_list) == 1:
                     # This is ugly, but we need the user object for the
