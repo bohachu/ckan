@@ -524,6 +524,7 @@ class RequestResetView(MethodView):
                     # mailer,
                     # and user_list does not return them
                     data_dict[u'id'] = user_list[0][u'id']
+                    del context['__auth_audit']
                     logic.get_action(u'user_show')(context, data_dict)
                     user_obj = context[u'user_obj']
                 elif len(user_list) > 1:
